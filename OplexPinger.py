@@ -306,9 +306,12 @@ class Ui_MainWindow(object):
         self.actionSCAN_shift_s.setText(_translate("MainWindow", "SCAN              shift+s"))
         self.actionSTOP_shift_p.setText(_translate("MainWindow", "STOP               shift+p"))
 
-
-
-
+        def AreaConfigHandler():
+            pass
+        def GroupsConfigHandler():
+            pass
+        def HostsConfigHandler():
+            pass
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
