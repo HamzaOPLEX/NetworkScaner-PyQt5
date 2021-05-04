@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/excel.png</file>
+    <file>icons/database.png</file>
     <file>icons/pause.png</file>
     <file>icons/close.png</file>
     <file>icons/pencil.png</file>
