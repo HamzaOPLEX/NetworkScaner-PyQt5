@@ -5,8 +5,6 @@ from PyQt5.QtWidgets import (QFileDialog, QLabel, QMainWindow, QMessageBox,QSize
 import sqlite3
 
 class Ui_MainWindow(object):
-
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(648, 660)
@@ -349,6 +347,24 @@ class Ui_MainWindow(object):
         self.ConnectToDb()
         self.PrepareData()
         self.pushButton_2.clicked.connect(partial(self.AreaHandler,'delete'))
+        self.clicked_buttn = ''
+    def MessageHandler(self, type, title, showmsg):
+        def msgbtn(i):
+            self.clicked_buttn =  i.text()
+        msg = QMessageBox()
+        if type == 'Err':
+            msg.setWindowTitle(title)
+            msg.setText(showmsg)
+            msg.setIcon(QMessageBox.Critical)
+            return msg
+        elif type == 'Info':
+            msg.setWindowTitle(title)
+            msg.setText(showmsg)
+            msg.setIcon(QMessageBox.Information)
+            msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            msg.buttonClicked.connect(msgbtn)
+            return msg
+
 
     def ConnectToDb(self):
         self.database_connection = sqlite3.connect('Database_Config/config.db')
@@ -359,11 +375,22 @@ class Ui_MainWindow(object):
         areas = list(self.cur.execute(f'SELECT * FROM areas'))
         groups =  list(self.cur.execute(f'SELECT * FROM groups'))
         hosts = list(self.cur.execute(f'SELECT * FROM hosts'))
+
+        # fill all comboboxes with data
+        self.AreaCombo.clear()
+        self.AreaCombo.addItems([f'{i[0]}-{i[1]}' for i in areas])
+        self.GroupCombo.clear()
+        self.GroupCombo.addItems([f'{i[0]}-{i[1]}' for i in groups])
+        self.AreaCombo_2.clear()
+        self.AreaCombo_2.addItems([f'{i[0]}-{i[1]}' for i in areas])
+        self.SelectGroupPing.clear()
+        self.SelectGroupPing.addItems([f'{i[0]}-{i[1]}' for i in groups])
+
         if areas:
             self.InsertData2Table(areas,self.tableWidget_4)
-        elif groups:
+        if groups:
             self.InsertData2Table(groups,self.tableWidget_3)
-        elif hosts:
+        if hosts:
             self.InsertData2Table(hosts,self.tableWidget_2)
 
     def InsertData2Table(self,data,table):
@@ -418,11 +445,63 @@ class Ui_MainWindow(object):
                     self.InsertData2Table(areaname,self.tableWidget_4)
                     self.lineEdit.clear()
                 except sqlite3.IntegrityError:
-                    print('Area Name Shoud Be Uniq')
+                    msg = self.MessageHandler('Err', 'inpute not uniq', 'Area name must be uniq')
+                    msg.exec_()            
             elif not areaname:
-                print('Please Enter Area Name')
+                msg = self.MessageHandler('Err', 'inpute require', 'Area name field require')
+                msg.exec_()
         elif action == 'delete':
-            self.RemoveSelectedRows(self.tableWidget_4,0,'areas')
+            MSG_header = 'all groups and hosts that belong to this area will be delete'
+            MSG_tail = 'Are You Sure To Delete This Areas ?'
+            msg = self.MessageHandler('Info', MSG_tail, MSG_header)
+            msg.exec_()
+            if self.clicked_buttn != '&Cancel':
+                self.RemoveSelectedRows(self.tableWidget_4,0,'areas')
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     import sys

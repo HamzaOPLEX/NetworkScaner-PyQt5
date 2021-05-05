@@ -2235,7 +2235,7 @@ PlotWidget {
          <string>START</string>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset>
           <normaloff>:/icons/icons/start.png</normaloff>:/icons/icons/start.png</iconset>
         </property>
         <property name="iconSize">
@@ -2309,7 +2309,7 @@ PlotWidget {
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset>
           <normaloff>:/icons/icons/pause.png</normaloff>:/icons/icons/pause.png</iconset>
         </property>
         <property name="iconSize">
@@ -2357,7 +2357,7 @@ PlotWidget {
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="icons.qrc">
+         <iconset>
           <normaloff>:/icons/icons/excel.png</normaloff>:/icons/icons/excel.png</iconset>
         </property>
         <property name="iconSize">
@@ -2373,12 +2373,22 @@ PlotWidget {
           <x>320</x>
           <y>20</y>
           <width>281</width>
-          <height>31</height>
+          <height>35</height>
          </rect>
         </property>
         <item>
          <property name="text">
           <string>*</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>dqsdqsd</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>qsdqdqd</string>
          </property>
         </item>
        </widget>
@@ -2413,7 +2423,7 @@ PlotWidget {
          </rect>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="Areas_Config">
          <attribute name="title">
@@ -2455,7 +2465,7 @@ PlotWidget {
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="icons.qrc">
+           <iconset>
             <normaloff>:/icons/icons/close.png</normaloff>:/icons/icons/close.png</iconset>
           </property>
           <property name="iconSize">
@@ -2573,7 +2583,7 @@ PlotWidget {
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="icons.qrc">
+           <iconset>
             <normaloff>:/icons/icons/close.png</normaloff>:/icons/icons/close.png</iconset>
           </property>
           <property name="iconSize">
@@ -2632,7 +2642,7 @@ PlotWidget {
             <x>350</x>
             <y>20</y>
             <width>121</width>
-            <height>31</height>
+            <height>35</height>
            </rect>
           </property>
          </widget>
@@ -2723,7 +2733,7 @@ PlotWidget {
             <x>350</x>
             <y>30</y>
             <width>121</width>
-            <height>31</height>
+            <height>35</height>
            </rect>
           </property>
          </widget>
@@ -2733,7 +2743,7 @@ PlotWidget {
             <x>480</x>
             <y>30</y>
             <width>131</width>
-            <height>31</height>
+            <height>35</height>
            </rect>
           </property>
          </widget>
@@ -2802,7 +2812,7 @@ PlotWidget {
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="icons.qrc">
+           <iconset>
             <normaloff>:/icons/icons/close.png</normaloff>:/icons/icons/close.png</iconset>
           </property>
           <property name="iconSize">
@@ -2871,7 +2881,7 @@ PlotWidget {
      <x>0</x>
      <y>0</y>
      <width>648</width>
-     <height>30</height>
+     <height>36</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFIle">
@@ -2957,9 +2967,7 @@ PlotWidget {
    </property>
   </action>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>actionExit</sender>
