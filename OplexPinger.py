@@ -112,10 +112,13 @@ class Ui_MainWindow(object):
         self.tableWidget_4 = QtWidgets.QTableWidget(self.Areas_Config)
         self.tableWidget_4.setGeometry(QtCore.QRect(10, 60, 461, 481))
         self.tableWidget_4.setObjectName("tableWidget_4")
-        self.tableWidget_4.setColumnCount(1)
+        self.tableWidget_4.setColumnCount(2)
         self.tableWidget_4.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_4.setHorizontalHeaderItem(0, item)
+        # self.tableWidget_4.setColumnHidden(0,True)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_4.setHorizontalHeaderItem(1, item)
         self.EditHost_3 = QtWidgets.QPushButton(self.Areas_Config)
         self.EditHost_3.setGeometry(QtCore.QRect(480, 160, 131, 41))
         self.EditHost_3.setText("")
@@ -302,10 +305,10 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "Select Group To Ping :"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Ping_tab), _translate("MainWindow", "Pinger"))
         self.lineEdit.setPlaceholderText(_translate("MainWindow", "Enter the area name here"))
-        item = self.tableWidget_4.horizontalHeaderItem(0)
+        item = self.tableWidget_4.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Area Name"))        
         item = self.tableWidget_4.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "Area Name"))
+        item.setText(_translate("MainWindow", "ID"))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.Areas_Config), _translate("MainWindow", "Areas Config"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Enter the group name here"))
         item = self.tableWidget_3.horizontalHeaderItem(0)
@@ -343,14 +346,19 @@ class Ui_MainWindow(object):
         self.actionSCAN_shift_s.setText(_translate("MainWindow", "SCAN              shift+s"))
         self.actionSTOP_shift_p.setText(_translate("MainWindow", "STOP               shift+p"))
         self.pushButton.clicked.connect(partial(self.AreaHandler,'add'))
+        self.ConnectToDb()
         self.PrepareData()
+        self.pushButton_2.clicked.connect(partial(self.AreaHandler,'delete'))
 
+    def ConnectToDb(self):
+        self.database_connection = sqlite3.connect('Database_Config/config.db')
+        self.cur = self.database_connection.cursor()
+        
 
     def PrepareData(self):
-        cur , conn = self.DatabaseConnect()
-        areas = list(cur.execute(f'SELECT area_name FROM areas'))
-        groups =  list(cur.execute(f'SELECT * FROM groups'))
-        hosts = list(cur.execute(f'SELECT * FROM hosts'))
+        areas = list(self.cur.execute(f'SELECT * FROM areas'))
+        groups =  list(self.cur.execute(f'SELECT * FROM groups'))
+        hosts = list(self.cur.execute(f'SELECT * FROM hosts'))
         if areas:
             self.InsertData2Table(areas,self.tableWidget_4)
         elif groups:
@@ -361,49 +369,60 @@ class Ui_MainWindow(object):
     def InsertData2Table(self,data,table):
         # get one row length
         row_lenght = len(data[0])
-        for d in data : 
+        for d in data :
             currentRowCount = table.rowCount()
             table.insertRow(currentRowCount)
             for index in range(row_lenght):
-                for clmn in d:
-                    table.setItem(currentRowCount,index , QTableWidgetItem(str(clmn)))
+                table.setItem(currentRowCount,index , QTableWidgetItem(str(d[index])))
 
 
     def AreaHandlerSave(self):
         pass
 
-    def DatabaseConnect(self):
-        database_connection = sqlite3.connect('Database_Config/config.db')
-        cur = database_connection.cursor()
-        return (cur,database_connection)
 
     def getNewId(self,TableName):
-        cur , conn= self.DatabaseConnect()
-        ids = list(cur.execute(f'SELECT id FROM {TableName}'))
+        ids = list(self.cur.execute(f'SELECT id FROM {TableName}'))
         ids = [i[0] for i in ids]
         n = 1
         while n in ids:
             n = n + 1
         return n
 
-
-
+    def RemoveSelectedRows(self,table,id_colomn,db_table_name):
+            SelectedRows = table.selectedItems()
+            if SelectedRows : 
+                RowNumbers =  []
+                for i in SelectedRows :
+                    try : 
+                        row = i.row()
+                        RowNumbers.append(row)
+                        RowNumbers = list(dict.fromkeys(RowNumbers))
+                        for row in RowNumbers :
+                            ID = table.item(row, id_colomn).text()
+                            DeleteQuery = f"DELETE FROM {db_table_name} WHERE id={ID};"
+                            self.cur.execute(DeleteQuery)
+                            self.database_connection.commit()
+                        table.setRowCount(0)
+                        self.PrepareData()
+                    except Exception:
+                        pass
     def AreaHandler(self,action):
         areaname = self.lineEdit.text()
-        if areaname:
-            cur , conn= self.DatabaseConnect()
-            ID = self.getNewId('areas')
-            try : 
-                cur.execute(f'INSERT INTO areas VALUES({ID},"{areaname}")')
-                conn.commit()
-                conn.close()
-                areaname = [areaname]
-                self.InsertData2Table(areaname,self.tableWidget_4)
-                self.lineEdit.clear()
-            except sqlite3.IntegrityError:
-                print('Area Name Shoud Be Uniq')
-        elif not areaname:
-            print('Please Enter Area Name')
+        if action == 'add':
+            if areaname:
+                ID = self.getNewId('areas')
+                try : 
+                    self.cur.execute(f'INSERT INTO areas VALUES({ID},"{areaname}")')
+                    self.database_connection.commit()
+                    areaname = [(ID,areaname,)]
+                    self.InsertData2Table(areaname,self.tableWidget_4)
+                    self.lineEdit.clear()
+                except sqlite3.IntegrityError:
+                    print('Area Name Shoud Be Uniq')
+            elif not areaname:
+                print('Please Enter Area Name')
+        elif action == 'delete':
+            self.RemoveSelectedRows(self.tableWidget_4,0,'areas')
 
 if __name__ == '__main__':
     import sys
