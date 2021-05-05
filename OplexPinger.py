@@ -2,8 +2,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from functools import partial
 import icons_rc
 from PyQt5.QtWidgets import (QFileDialog, QLabel, QMainWindow, QMessageBox,QSizePolicy, QTableWidget, QTableWidgetItem)
+import sqlite3
 
 class Ui_MainWindow(object):
+
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(648, 660)
@@ -300,6 +303,8 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Ping_tab), _translate("MainWindow", "Pinger"))
         self.lineEdit.setPlaceholderText(_translate("MainWindow", "Enter the area name here"))
         item = self.tableWidget_4.horizontalHeaderItem(0)
+        item.setText(_translate("MainWindow", "Area Name"))        
+        item = self.tableWidget_4.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Area Name"))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.Areas_Config), _translate("MainWindow", "Areas Config"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Enter the group name here"))
@@ -338,23 +343,67 @@ class Ui_MainWindow(object):
         self.actionSCAN_shift_s.setText(_translate("MainWindow", "SCAN              shift+s"))
         self.actionSTOP_shift_p.setText(_translate("MainWindow", "STOP               shift+p"))
         self.pushButton.clicked.connect(partial(self.AreaHandler,'add'))
+        self.PrepareData()
+
+
+    def PrepareData(self):
+        cur , conn = self.DatabaseConnect()
+        areas = list(cur.execute(f'SELECT area_name FROM areas'))
+        groups =  list(cur.execute(f'SELECT * FROM groups'))
+        hosts = list(cur.execute(f'SELECT * FROM hosts'))
+        if areas:
+            self.InsertData2Table(areas,self.tableWidget_4)
+        elif groups:
+            self.InsertData2Table(groups,self.tableWidget_3)
+        elif hosts:
+            self.InsertData2Table(hosts,self.tableWidget_2)
+
+    def InsertData2Table(self,data,table):
+        # get one row length
+        row_lenght = len(data[0])
+        for d in data : 
+            currentRowCount = table.rowCount()
+            table.insertRow(currentRowCount)
+            for index in range(row_lenght):
+                for clmn in d:
+                    table.setItem(currentRowCount,index , QTableWidgetItem(str(clmn)))
 
 
     def AreaHandlerSave(self):
         pass
 
+    def DatabaseConnect(self):
+        database_connection = sqlite3.connect('Database_Config/config.db')
+        cur = database_connection.cursor()
+        return (cur,database_connection)
+
+    def getNewId(self,TableName):
+        cur , conn= self.DatabaseConnect()
+        ids = list(cur.execute(f'SELECT id FROM {TableName}'))
+        ids = [i[0] for i in ids]
+        n = 1
+        while n in ids:
+            n = n + 1
+        return n
+
+
+
     def AreaHandler(self,action):
         areaname = self.lineEdit.text()
         if areaname:
-            areaname = [areaname]
-            for area in areaname:
-                currentRowCount = self.tableWidget_4.rowCount()
-                self.tableWidget_4.insertRow(currentRowCount)
-                for index in range(len(areaname)):
-                    self.tableWidget_4.setItem(currentRowCount, index, QTableWidgetItem(str(areaname[index])))
-            self.lineEdit.clear()
+            cur , conn= self.DatabaseConnect()
+            ID = self.getNewId('areas')
+            try : 
+                cur.execute(f'INSERT INTO areas VALUES({ID},"{areaname}")')
+                conn.commit()
+                conn.close()
+                areaname = [areaname]
+                self.InsertData2Table(areaname,self.tableWidget_4)
+                self.lineEdit.clear()
+            except sqlite3.IntegrityError:
+                print('Area Name Shoud Be Uniq')
         elif not areaname:
-            print('Pleas Enter Area Name')
+            print('Please Enter Area Name')
 
 if __name__ == '__main__':
     import sys
