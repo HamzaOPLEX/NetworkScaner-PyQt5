@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>HamzaOPLEX - Oplex Pinger</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -2222,7 +2222,7 @@ PlotWidget {
        <attribute name="title">
         <string>Pinger</string>
        </attribute>
-       <widget class="QPushButton" name="ScanButtonIPscanner">
+       <widget class="QPushButton" name="StartButtn">
         <property name="geometry">
          <rect>
           <x>11</x>
@@ -2260,13 +2260,13 @@ PlotWidget {
          <bool>false</bool>
         </property>
        </widget>
-       <widget class="QTableWidget" name="tableWidget">
+       <widget class="QTableWidget" name="StatusTable">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>110</y>
+          <y>100</y>
           <width>591</width>
-          <height>431</height>
+          <height>411</height>
          </rect>
         </property>
         <column>
@@ -2290,7 +2290,7 @@ PlotWidget {
          </property>
         </column>
        </widget>
-       <widget class="QPushButton" name="PauseBottonIPscanner">
+       <widget class="QPushButton" name="PauseButtn">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -2337,33 +2337,43 @@ PlotWidget {
           <x>10</x>
           <y>60</y>
           <width>591</width>
-          <height>41</height>
+          <height>31</height>
          </rect>
         </property>
         <property name="value">
          <number>0</number>
         </property>
        </widget>
-       <widget class="QPushButton" name="pushButton_11">
+       <widget class="QPushButton" name="SaveExcelButtn">
         <property name="geometry">
          <rect>
-          <x>200</x>
-          <y>550</y>
-          <width>181</width>
-          <height>21</height>
+          <x>260</x>
+          <y>520</y>
+          <width>88</width>
+          <height>61</height>
          </rect>
         </property>
         <property name="text">
-         <string>SAVE AS EXCEL FILE</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/icons/excel.png</normaloff>:/icons/icons/excel.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>45</width>
+          <height>45</height>
+         </size>
         </property>
        </widget>
-       <widget class="QComboBox" name="comboBox">
+       <widget class="QComboBox" name="SelectGroupPing">
         <property name="geometry">
          <rect>
           <x>320</x>
-          <y>10</y>
+          <y>20</y>
           <width>281</width>
-          <height>41</height>
+          <height>31</height>
          </rect>
         </property>
         <item>
@@ -2371,16 +2381,22 @@ PlotWidget {
           <string>*</string>
          </property>
         </item>
-        <item>
-         <property name="text">
-          <string>GROUP NAME 01</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>GROUP NAME 02</string>
-         </property>
-        </item>
+       </widget>
+       <widget class="QLabel" name="label_5">
+        <property name="geometry">
+         <rect>
+          <x>320</x>
+          <y>0</y>
+          <width>271</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;</string>
+        </property>
+        <property name="text">
+         <string>Select Group To Ping :</string>
+        </property>
        </widget>
       </widget>
       <widget class="QWidget" name="config_tab">
@@ -2397,22 +2413,12 @@ PlotWidget {
          </rect>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="Areas_Config">
          <attribute name="title">
           <string>Areas Config</string>
          </attribute>
-         <widget class="QListWidget" name="listWidget">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>60</y>
-            <width>461</width>
-            <height>481</height>
-           </rect>
-          </property>
-         </widget>
          <widget class="QPushButton" name="pushButton">
           <property name="geometry">
            <rect>
@@ -2459,29 +2465,6 @@ PlotWidget {
            </size>
           </property>
          </widget>
-         <widget class="QPushButton" name="pushButton_3">
-          <property name="geometry">
-           <rect>
-            <x>480</x>
-            <y>160</y>
-            <width>131</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>icons/pencil.png</normaloff>icons/pencil.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>30</width>
-            <height>30</height>
-           </size>
-          </property>
-         </widget>
          <widget class="QLineEdit" name="lineEdit">
           <property name="geometry">
            <rect>
@@ -2495,6 +2478,44 @@ PlotWidget {
            <string>Enter the area name here</string>
           </property>
          </widget>
+         <widget class="QTableWidget" name="tableWidget_4">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>461</width>
+            <height>481</height>
+           </rect>
+          </property>
+          <column>
+           <property name="text">
+            <string>Area Name</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QPushButton" name="EditHost_3">
+          <property name="geometry">
+           <rect>
+            <x>480</x>
+            <y>160</y>
+            <width>131</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>icons/database.png</normaloff>icons/database.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>35</width>
+            <height>35</height>
+           </size>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="Groups_config">
          <attribute name="title">
@@ -2504,9 +2525,9 @@ PlotWidget {
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>10</y>
-            <width>461</width>
-            <height>41</height>
+            <y>20</y>
+            <width>331</width>
+            <height>31</height>
            </rect>
           </property>
           <property name="text">
@@ -2514,16 +2535,6 @@ PlotWidget {
           </property>
           <property name="placeholderText">
            <string>Enter the group name here</string>
-          </property>
-         </widget>
-         <widget class="QListWidget" name="listWidget_2">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>60</y>
-            <width>461</width>
-            <height>481</height>
-           </rect>
           </property>
          </widget>
          <widget class="QPushButton" name="pushButton_4">
@@ -2541,29 +2552,6 @@ PlotWidget {
           <property name="icon">
            <iconset>
             <normaloff>icons/plus.png</normaloff>icons/plus.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>30</width>
-            <height>30</height>
-           </size>
-          </property>
-         </widget>
-         <widget class="QPushButton" name="pushButton_5">
-          <property name="geometry">
-           <rect>
-            <x>480</x>
-            <y>160</y>
-            <width>131</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>icons/pencil.png</normaloff>icons/pencil.png</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -2593,6 +2581,85 @@ PlotWidget {
             <width>30</width>
             <height>30</height>
            </size>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="EditHost_2">
+          <property name="geometry">
+           <rect>
+            <x>480</x>
+            <y>160</y>
+            <width>131</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>icons/database.png</normaloff>icons/database.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>35</width>
+            <height>35</height>
+           </size>
+          </property>
+         </widget>
+         <widget class="QTableWidget" name="tableWidget_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>461</width>
+            <height>481</height>
+           </rect>
+          </property>
+          <column>
+           <property name="text">
+            <string>Group Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>belong to area</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QComboBox" name="AreaCombo_2">
+          <property name="geometry">
+           <rect>
+            <x>350</x>
+            <y>20</y>
+            <width>121</width>
+            <height>31</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_6">
+          <property name="geometry">
+           <rect>
+            <x>350</x>
+            <y>0</y>
+            <width>121</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>AREA</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_7">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>0</y>
+            <width>121</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Group Name : </string>
           </property>
          </widget>
         </widget>
@@ -2630,7 +2697,7 @@ PlotWidget {
            </property>
           </column>
          </widget>
-         <widget class="QLineEdit" name="lineEdit_3">
+         <widget class="QLineEdit" name="hostname">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -2640,7 +2707,7 @@ PlotWidget {
            </rect>
           </property>
          </widget>
-         <widget class="QLineEdit" name="lineEdit_4">
+         <widget class="QLineEdit" name="ipaddr">
           <property name="geometry">
            <rect>
             <x>180</x>
@@ -2650,7 +2717,7 @@ PlotWidget {
            </rect>
           </property>
          </widget>
-         <widget class="QComboBox" name="comboBox_2">
+         <widget class="QComboBox" name="AreaCombo">
           <property name="geometry">
            <rect>
             <x>350</x>
@@ -2660,7 +2727,7 @@ PlotWidget {
            </rect>
           </property>
          </widget>
-         <widget class="QComboBox" name="comboBox_3">
+         <widget class="QComboBox" name="GroupCombo">
           <property name="geometry">
            <rect>
             <x>480</x>
@@ -2693,7 +2760,7 @@ PlotWidget {
            </rect>
           </property>
           <property name="text">
-           <string>IP ADDRESS$</string>
+           <string>IP ADDRESS</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_3">
@@ -2722,7 +2789,7 @@ PlotWidget {
            <string>GROUP</string>
           </property>
          </widget>
-         <widget class="QPushButton" name="pushButton_7">
+         <widget class="QPushButton" name="RemoveHost">
           <property name="geometry">
            <rect>
             <x>480</x>
@@ -2745,7 +2812,7 @@ PlotWidget {
            </size>
           </property>
          </widget>
-         <widget class="QPushButton" name="pushButton_8">
+         <widget class="QPushButton" name="AddHost">
           <property name="geometry">
            <rect>
             <x>480</x>
@@ -2768,7 +2835,7 @@ PlotWidget {
            </size>
           </property>
          </widget>
-         <widget class="QPushButton" name="pushButton_9">
+         <widget class="QPushButton" name="EditHost">
           <property name="geometry">
            <rect>
             <x>480</x>
@@ -2782,12 +2849,12 @@ PlotWidget {
           </property>
           <property name="icon">
            <iconset>
-            <normaloff>icons/pencil.png</normaloff>icons/pencil.png</iconset>
+            <normaloff>icons/database.png</normaloff>icons/database.png</iconset>
           </property>
           <property name="iconSize">
            <size>
-            <width>30</width>
-            <height>30</height>
+            <width>35</width>
+            <height>35</height>
            </size>
           </property>
          </widget>
@@ -2913,7 +2980,7 @@ PlotWidget {
   <connection>
    <sender>actionSTOP_shift_p</sender>
    <signal>triggered()</signal>
-   <receiver>PauseBottonIPscanner</receiver>
+   <receiver>PauseButtn</receiver>
    <slot>animateClick()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2929,7 +2996,7 @@ PlotWidget {
   <connection>
    <sender>actionSCAN_shift_s</sender>
    <signal>triggered()</signal>
-   <receiver>ScanButtonIPscanner</receiver>
+   <receiver>StartButtn</receiver>
    <slot>animateClick()</slot>
    <hints>
     <hint type="sourcelabel">
