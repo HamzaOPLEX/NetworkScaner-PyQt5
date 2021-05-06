@@ -307,6 +307,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Area Name"))        
         item = self.tableWidget_4.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "ID"))
+        
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.Areas_Config), _translate("MainWindow", "Areas Config"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Enter the group name here"))
         item = self.tableWidget_3.horizontalHeaderItem(0)
@@ -346,6 +347,7 @@ class Ui_MainWindow(object):
         self.pushButton.clicked.connect(partial(self.AreaHandler,'add'))
         self.ConnectToDb()
         self.PrepareData()
+        self.AreaHandler('edit')
         self.pushButton_2.clicked.connect(partial(self.AreaHandler,'delete'))
         self.clicked_buttn = ''
     def MessageHandler(self, type, title, showmsg):
@@ -455,10 +457,12 @@ class Ui_MainWindow(object):
             MSG_tail = 'Are You Sure To Delete This Areas ?'
             msg = self.MessageHandler('Info', MSG_tail, MSG_header)
             msg.exec_()
-            if self.clicked_buttn != '&Cancel':
+            if self.clicked_buttn != 'Cancel':
                 self.RemoveSelectedRows(self.tableWidget_4,0,'areas')
- 
-
+        elif action == 'edit':
+            def getEditedItems(items):
+                print(items.text(),items.row())
+            self.tableWidget_4.itemChanged.connect(getEditedItems)
 
 
 
