@@ -112,9 +112,10 @@ class Ui_MainWindow(object):
         self.tableWidget_4.setObjectName("tableWidget_4")
         self.tableWidget_4.setColumnCount(2)
         self.tableWidget_4.setRowCount(0)
+        self.tableWidget_4.setColumnHidden(0,True)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_4.setHorizontalHeaderItem(0, item)
-        # self.tableWidget_4.setColumnHidden(0,True)
+        self.tableWidget_4.setColumnHidden(0,True)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_4.setHorizontalHeaderItem(1, item)
         self.EditHost_3 = QtWidgets.QPushButton(self.Areas_Config)
@@ -153,12 +154,15 @@ class Ui_MainWindow(object):
         self.tableWidget_3 = QtWidgets.QTableWidget(self.Groups_config)
         self.tableWidget_3.setGeometry(QtCore.QRect(10, 60, 461, 481))
         self.tableWidget_3.setObjectName("tableWidget_3")
-        self.tableWidget_3.setColumnCount(2)
+        self.tableWidget_3.setColumnCount(3)
         self.tableWidget_3.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_3.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_3.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_3.setHorizontalHeaderItem(2, item)
+        self.tableWidget_3.setColumnHidden(0,True)
         self.AreaCombo_2 = QtWidgets.QComboBox(self.Groups_config)
         self.AreaCombo_2.setGeometry(QtCore.QRect(350, 20, 121, 31))
         self.AreaCombo_2.setObjectName("AreaCombo_2")
@@ -311,8 +315,10 @@ class Ui_MainWindow(object):
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.Areas_Config), _translate("MainWindow", "Areas Config"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Enter the group name here"))
         item = self.tableWidget_3.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "Group Name"))
+        item.setText(_translate("MainWindow", "ID"))
         item = self.tableWidget_3.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "Group Name"))
+        item = self.tableWidget_3.horizontalHeaderItem(2)
         item.setText(_translate("MainWindow", "belong to area"))
         self.label_6.setText(_translate("MainWindow", "AREA"))
         self.label_7.setText(_translate("MainWindow", "Group Name : "))
@@ -345,11 +351,14 @@ class Ui_MainWindow(object):
         self.actionSCAN_shift_s.setText(_translate("MainWindow", "SCAN              shift+s"))
         self.actionSTOP_shift_p.setText(_translate("MainWindow", "STOP               shift+p"))
         self.pushButton.clicked.connect(partial(self.AreaHandler,'add'))
+        self.pushButton_4.clicked.connect(partial(self.GroupsHandler,'add'))
         self.ConnectToDb()
         self.PrepareData()
-        self.AreaHandler('edit')
         self.pushButton_2.clicked.connect(partial(self.AreaHandler,'delete'))
+        self.pushButton_6.clicked.connect(partial(self.GroupsHandler,'delete'))
         self.clicked_buttn = ''
+        self.tableWidget_4.itemChanged.connect(partial(self.getEditedItems,self.tableWidget_4,"areas","area_name"))
+
     def MessageHandler(self, type, title, showmsg):
         def msgbtn(i):
             self.clicked_buttn =  i.text()
@@ -367,13 +376,27 @@ class Ui_MainWindow(object):
             msg.buttonClicked.connect(msgbtn)
             return msg
 
+    def getEditedItems(self,tableobj,dbtable,colomn,items):
+        try :
+            try : 
+                ID =  tableobj.item(items.row(),0).text()
+                NEW_DATA =   tableobj.item(items.row(),1).text()
+                self.cur.execute(f'UPDATE {dbtable} SET {colomn} = "{NEW_DATA}" WHERE id="{ID}"')
+                self.database_connection.commit()
+                self.PrepareData(tableprepare=False)
+            except sqlite3.IntegrityError:
+                    msg = self.MessageHandler('Err', 'inpute not uniq', 'Area name must be uniq')
+                    msg.exec_()
+                    tableobj.setRowCount(0)
+                    self.PrepareData()
+        except AttributeError: 
+            pass
 
     def ConnectToDb(self):
         self.database_connection = sqlite3.connect('Database_Config/config.db')
         self.cur = self.database_connection.cursor()
         
-
-    def PrepareData(self):
+    def PrepareData(self,tableprepare=True):
         areas = list(self.cur.execute(f'SELECT * FROM areas'))
         groups =  list(self.cur.execute(f'SELECT * FROM groups'))
         hosts = list(self.cur.execute(f'SELECT * FROM hosts'))
@@ -387,13 +410,13 @@ class Ui_MainWindow(object):
         self.AreaCombo_2.addItems([f'{i[0]}-{i[1]}' for i in areas])
         self.SelectGroupPing.clear()
         self.SelectGroupPing.addItems([f'{i[0]}-{i[1]}' for i in groups])
-
-        if areas:
-            self.InsertData2Table(areas,self.tableWidget_4)
-        if groups:
-            self.InsertData2Table(groups,self.tableWidget_3)
-        if hosts:
-            self.InsertData2Table(hosts,self.tableWidget_2)
+        if tableprepare : 
+            if areas:
+                self.InsertData2Table(areas,self.tableWidget_4)
+            if groups:
+                self.InsertData2Table(groups,self.tableWidget_3)
+            if hosts:
+                self.InsertData2Table(hosts,self.tableWidget_2)
 
     def InsertData2Table(self,data,table):
         # get one row length
@@ -403,11 +426,6 @@ class Ui_MainWindow(object):
             table.insertRow(currentRowCount)
             for index in range(row_lenght):
                 table.setItem(currentRowCount,index , QTableWidgetItem(str(d[index])))
-
-
-    def AreaHandlerSave(self):
-        pass
-
 
     def getNewId(self,TableName):
         ids = list(self.cur.execute(f'SELECT id FROM {TableName}'))
@@ -435,6 +453,9 @@ class Ui_MainWindow(object):
                         self.PrepareData()
                     except Exception:
                         pass
+   
+
+    ########### Area Handler ###################
     def AreaHandler(self,action):
         areaname = self.lineEdit.text()
         if action == 'add':
@@ -450,22 +471,46 @@ class Ui_MainWindow(object):
                     msg = self.MessageHandler('Err', 'inpute not uniq', 'Area name must be uniq')
                     msg.exec_()            
             elif not areaname:
-                msg = self.MessageHandler('Err', 'inpute require', 'Area name field require')
+                msg = self.MessageHandler('Err', 'inpute require', 'Area name: field require')
                 msg.exec_()
         elif action == 'delete':
-            MSG_header = 'all groups and hosts that belong to this area will be delete'
+            MSG_header = 'all groups and hosts that belong to this area will be deleted'
             MSG_tail = 'Are You Sure To Delete This Areas ?'
             msg = self.MessageHandler('Info', MSG_tail, MSG_header)
             msg.exec_()
             if self.clicked_buttn != 'Cancel':
                 self.RemoveSelectedRows(self.tableWidget_4,0,'areas')
-        elif action == 'edit':
-            def getEditedItems(items):
-                print(items.text(),items.row())
-            self.tableWidget_4.itemChanged.connect(getEditedItems)
 
 
-
+    def GroupsHandler(self,action):
+        groupname = self.lineEdit_2.text()
+        area = str(self.AreaCombo_2.currentText()).split('-')[0]
+        if action == 'add':
+            if groupname:
+                if area :
+                    ID = self.getNewId('groups')
+                    try : 
+                        self.cur.execute(f'INSERT INTO groups VALUES({ID},"{groupname}","{area}")')
+                        self.database_connection.commit()
+                        groupname = [(ID,groupname,area)]
+                        self.InsertData2Table(groupname,self.tableWidget_3)
+                        self.lineEdit_2.clear()
+                    except sqlite3.IntegrityError:
+                        msg = self.MessageHandler('Err', 'inpute not uniq', 'Group name must be uniq')
+                        msg.exec_()
+                elif not area :
+                    msg = self.MessageHandler('Err', 'area require', 'please add at least one area')
+                    msg.exec_()
+            elif not groupname:
+                msg = self.MessageHandler('Err', 'inpute require', 'Group name: field require')
+                msg.exec_()
+        elif action == 'delete':
+            MSG_header = 'allhosts that belong to this group will be deleted'
+            MSG_tail = 'Are You Sure To Delete This Group ?'
+            msg = self.MessageHandler('Info', MSG_tail, MSG_header)
+            msg.exec_()
+            if self.clicked_buttn != 'Cancel':
+                self.RemoveSelectedRows(self.tableWidget_3,0,'groups')
 
 
 
