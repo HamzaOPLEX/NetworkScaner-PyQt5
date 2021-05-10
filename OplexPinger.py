@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from functools import partial
+import subprocess
 import icons_rc
 from PyQt5.QtWidgets import (QFileDialog, QLabel, QMainWindow, QMessageBox,QSizePolicy, QTableWidget, QTableWidgetItem)
 import sqlite3
@@ -180,6 +181,7 @@ class Ui_MainWindow(object):
         self.tableWidget_2.setObjectName("tableWidget_2")
         self.tableWidget_2.setColumnCount(4)
         self.tableWidget_2.setRowCount(0)
+        self.tableWidget_2.setColumnHidden(0,True)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_2.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
@@ -194,11 +196,8 @@ class Ui_MainWindow(object):
         self.ipaddr = QtWidgets.QLineEdit(self.Hosts_Config)
         self.ipaddr.setGeometry(QtCore.QRect(180, 30, 161, 31))
         self.ipaddr.setObjectName("ipaddr")
-        self.AreaCombo = QtWidgets.QComboBox(self.Hosts_Config)
-        self.AreaCombo.setGeometry(QtCore.QRect(350, 30, 121, 31))
-        self.AreaCombo.setObjectName("AreaCombo")
         self.GroupCombo = QtWidgets.QComboBox(self.Hosts_Config)
-        self.GroupCombo.setGeometry(QtCore.QRect(480, 30, 131, 31))
+        self.GroupCombo.setGeometry(QtCore.QRect(350, 30, 121, 31))
         self.GroupCombo.setObjectName("GroupCombo")
         self.label = QtWidgets.QLabel(self.Hosts_Config)
         self.label.setGeometry(QtCore.QRect(10, 10, 151, 16))
@@ -324,17 +323,16 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "Group Name : "))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.Groups_config), _translate("MainWindow", "Groups Config"))
         item = self.tableWidget_2.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "hostname"))
+        item.setText(_translate("MainWindow", "ID"))
         item = self.tableWidget_2.horizontalHeaderItem(1)
-        item.setText(_translate("MainWindow", "ip address"))
+        item.setText(_translate("MainWindow", "hostname"))
         item = self.tableWidget_2.horizontalHeaderItem(2)
-        item.setText(_translate("MainWindow", "belong to area"))
+        item.setText(_translate("MainWindow", "ip address"))
         item = self.tableWidget_2.horizontalHeaderItem(3)
         item.setText(_translate("MainWindow", "belong to group"))
         self.label.setText(_translate("MainWindow", "HOSTNAME"))
         self.label_2.setText(_translate("MainWindow", "IP ADDRESS"))
-        self.label_3.setText(_translate("MainWindow", "AREA"))
-        self.label_4.setText(_translate("MainWindow", "GROUP"))
+        self.label_3.setText(_translate("MainWindow", "GROUP"))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.Hosts_Config), _translate("MainWindow", "Hosts Config"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.config_tab), _translate("MainWindow", "Configuration"))
         self.menuFIle.setTitle(_translate("MainWindow", "File"))
@@ -350,12 +348,16 @@ class Ui_MainWindow(object):
         self.actionDark_Theme.setText(_translate("MainWindow", "Dark Theme"))
         self.actionSCAN_shift_s.setText(_translate("MainWindow", "SCAN              shift+s"))
         self.actionSTOP_shift_p.setText(_translate("MainWindow", "STOP               shift+p"))
+        self.StartButtn.clicked.connect(self.PingHandler)
+
         self.pushButton.clicked.connect(partial(self.AreaHandler,'add'))
         self.pushButton_4.clicked.connect(partial(self.GroupsHandler,'add'))
+        self.AddHost.clicked.connect(partial(self.HostHandler,'add'))
         self.ConnectToDb()
         self.PrepareData()
         self.pushButton_2.clicked.connect(partial(self.AreaHandler,'delete'))
         self.pushButton_6.clicked.connect(partial(self.GroupsHandler,'delete'))
+        self.RemoveHost.clicked.connect(partial(self.HostHandler,'delete'))
         self.clicked_buttn = ''
         self.tableWidget_4.itemChanged.connect(partial(self.getEditedItems,self.tableWidget_4,"areas","area_name"))
 
@@ -402,8 +404,6 @@ class Ui_MainWindow(object):
         hosts = list(self.cur.execute(f'SELECT * FROM hosts'))
 
         # fill all comboboxes with data
-        self.AreaCombo.clear()
-        self.AreaCombo.addItems([f'{i[0]}-{i[1]}' for i in areas])
         self.GroupCombo.clear()
         self.GroupCombo.addItems([f'{i[0]}-{i[1]}' for i in groups])
         self.AreaCombo_2.clear()
@@ -420,6 +420,7 @@ class Ui_MainWindow(object):
 
     def InsertData2Table(self,data,table):
         # get one row length
+        table.setRowCount(0)
         row_lenght = len(data[0])
         for d in data :
             currentRowCount = table.rowCount()
@@ -438,22 +439,16 @@ class Ui_MainWindow(object):
     def RemoveSelectedRows(self,table,id_colomn,db_table_name):
             SelectedRows = table.selectedItems()
             if SelectedRows : 
-                RowNumbers =  []
                 for i in SelectedRows :
                     try : 
-                        row = i.row()
-                        RowNumbers.append(row)
-                        RowNumbers = list(dict.fromkeys(RowNumbers))
-                        for row in RowNumbers :
-                            ID = table.item(row, id_colomn).text()
-                            DeleteQuery = f"DELETE FROM {db_table_name} WHERE id={ID};"
-                            self.cur.execute(DeleteQuery)
-                            self.database_connection.commit()
-                        table.setRowCount(0)
-                        self.PrepareData()
-                    except Exception:
-                        pass
-   
+                        ID = table.item(i.row(), 0).text()
+                        DeleteQuery = f"DELETE FROM {db_table_name} WHERE id={ID};"
+                        self.cur.execute(DeleteQuery)
+                        self.database_connection.commit()
+                    except Exception as err:
+                        print(err)
+                table.setRowCount(0)
+                self.PrepareData()
 
     ########### Area Handler ###################
     def AreaHandler(self,action):
@@ -464,8 +459,7 @@ class Ui_MainWindow(object):
                 try : 
                     self.cur.execute(f'INSERT INTO areas VALUES({ID},"{areaname}")')
                     self.database_connection.commit()
-                    areaname = [(ID,areaname,)]
-                    self.InsertData2Table(areaname,self.tableWidget_4)
+                    self.PrepareData()
                     self.lineEdit.clear()
                 except sqlite3.IntegrityError:
                     msg = self.MessageHandler('Err', 'inpute not uniq', 'Area name must be uniq')
@@ -481,7 +475,6 @@ class Ui_MainWindow(object):
             if self.clicked_buttn != 'Cancel':
                 self.RemoveSelectedRows(self.tableWidget_4,0,'areas')
 
-
     def GroupsHandler(self,action):
         groupname = self.lineEdit_2.text()
         area = str(self.AreaCombo_2.currentText()).split('-')[0]
@@ -492,8 +485,7 @@ class Ui_MainWindow(object):
                     try : 
                         self.cur.execute(f'INSERT INTO groups VALUES({ID},"{groupname}","{area}")')
                         self.database_connection.commit()
-                        groupname = [(ID,groupname,area)]
-                        self.InsertData2Table(groupname,self.tableWidget_3)
+                        self.PrepareData()
                         self.lineEdit_2.clear()
                     except sqlite3.IntegrityError:
                         msg = self.MessageHandler('Err', 'inpute not uniq', 'Group name must be uniq')
@@ -512,10 +504,47 @@ class Ui_MainWindow(object):
             if self.clicked_buttn != 'Cancel':
                 self.RemoveSelectedRows(self.tableWidget_3,0,'groups')
 
+    def HostHandler(self,action):
+        hostname = self.hostname.text()
+        ip = self.ipaddr.text()
+        group = str(self.GroupCombo.currentText()).split('-')[0]
+        if action == 'add':
+            if hostname and ip and group:
+                if group :
+                    ID = self.getNewId('hosts')
+                    try : 
+                        self.cur.execute(f'INSERT INTO hosts VALUES({ID},"{hostname}","{ip}","{group}")')
+                        self.database_connection.commit()
+                        self.PrepareData()
+                        self.hostname.clear()
+                        self.ipaddr.clear()
+                    except sqlite3.IntegrityError:
+                        msg = self.MessageHandler('Err', 'inpute not uniq', 'host must be uniq')
+                        msg.exec_()
+                elif not group :
+                    msg = self.MessageHandler('Err', 'group require', 'please add at least one host')
+                    msg.exec_()
+            elif not groupname:
+                msg = self.MessageHandler('Err', 'inpute require', 'Group name: field require')
+                msg.exec_()
+        elif action == 'delete':
+            MSG_header = 'Are You Sure To Delete This hosts ?'
+            MSG_tail = 'Yes Or No ?'
+            msg = self.MessageHandler('Info', MSG_tail, MSG_header)
+            msg.exec_()
+            if self.clicked_buttn != 'Cancel':
+                self.RemoveSelectedRows(self.tableWidget_2,0,'hosts')
 
-
-
-
+    def PingHandler(self):
+        group_id = str(self.SelectGroupPing.currentText()).split('-')[0]
+        query = f'SELECT ip FROM hosts WHERE hgroup={group_id}'
+        ips = self.cur.execute(query)
+        self.database_connection.commit()
+        for ip in ips:
+            IP = ip[0]
+            HOST_Status  = 'Conntected :)' if subprocess.run('ping -n 1 '+IP,shell=True,capture_output=True,text=True).returncode == 0 else 'not Connected :('
+            theMsg = f'{IP} is {HOST_Status}' 
+            print(theMsg)
 
 
 
