@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from functools import partial
-import subprocess
+from scapy.all import *
+
 import icons_rc
 from PyQt5.QtWidgets import (QFileDialog, QLabel, QMainWindow, QMessageBox,QSizePolicy, QTableWidget, QTableWidgetItem)
 import sqlite3
@@ -540,12 +541,34 @@ class Ui_MainWindow(object):
         query = f'SELECT ip FROM hosts WHERE hgroup={group_id}'
         ips = self.cur.execute(query)
         self.database_connection.commit()
+        TABLE_OUTPUT_DATA = []
         for ip in ips:
-            IP = ip[0]
-            HOST_Status  = 'Conntected :)' if subprocess.run('ping -n 1 '+IP,shell=True,capture_output=True,text=True).returncode == 0 else 'not Connected :('
-            theMsg = f'{IP} is {HOST_Status}' 
-            print(theMsg)
-
+            ip = ip[0]
+            area = 'ip[1]'
+            group = 'ip[2]'
+            icmp = IP(dst=ip)/ICMP()
+            resp = sr1(icmp,timeout=2)
+            if resp == None:
+                TABLE_OUTPUT_DATA.append({
+                            'ip':ip,
+                            'status':'DOWN',
+                            'area':area,
+                            'group':group
+                            })
+            else:
+                TABLE_OUTPUT_DATA.append({
+                            'ip':ip,
+                            'status':'UP',
+                            'area':area,
+                            'group':group
+                            })
+        self.StatusTable.setRowCount(0)
+        row_lenght = len(TABLE_OUTPUT_DATA)
+        for row in TABLE_OUTPUT_DATA:
+            currentRowCount = self.StatusTable.rowCount()
+            self.StatusTable.insertRow(currentRowCount)
+            for clmn in row.keys():
+                self.StatusTable.setItem(currentRowCount,list(row.keys()).index(clmn) , QTableWidgetItem(str(row[clmn])))
 
 
 
